@@ -37,7 +37,7 @@ void pipeStuff(int fdin, char ***programArgs) {
                 return;
             }
         }
-        execv(program, args);
+        execvp(program, args);
     } else {
         int statval;
         
@@ -68,9 +68,9 @@ void pipeStuff(int fdin, char ***programArgs) {
 }
 
 void digenv(char *grepArgs[]) {
-    char *lessArgs[] = {"/usr/bin/less", NULL};
-    char *sortArgs[] = {"/usr/bin/sort", NULL};
-    char *printenvArgs[] = {"/usr/bin/printenv", NULL};
+    char *lessArgs[] = {"less", NULL};
+    char *sortArgs[] = {"sort", NULL};
+    char *printenvArgs[] = {"printenv", NULL};
     char **programArgs[] = {printenvArgs, grepArgs, sortArgs, lessArgs,  NULL};
     char ***programStart = programArgs;
     if (grepArgs == NULL) {
@@ -81,7 +81,7 @@ void digenv(char *grepArgs[]) {
 }
 
 int main(int argc, char *argv[]) {
-    argv[0] = "/bin/grep";
+    argv[0] = "grep";
     if (argc <= 1) {
         digenv(NULL); 
     } else {
