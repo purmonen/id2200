@@ -91,7 +91,7 @@ executeProgramPipeline (
             return 1;
         }
         
-        /* Display more useful error output when grep fails */
+        // If child process fails - exit
         if (statval) {
             close(fd[0]);
             return 1;
