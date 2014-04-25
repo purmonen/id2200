@@ -10,11 +10,11 @@
  *   to running the following in shell:
  *     printenv | sort | grep args | less
  *
- * OTIONS
- *   Exactly the same as for grep since all arguments are sent to grep
- *
  *   Without args it's the same as:
  *     printenv | sort | less 
+ *
+ * OTIONS
+ *   Exactly the same as for grep since all arguments are sent to grep
  *
  * AUTHOR
  *   Sami Purmonen, purmonen@kth.se
@@ -81,8 +81,10 @@ executeProgramPipeline (
         }
         execvp(programName, program);
     } else {
+        if(close(fd[1])) {
+            printf("Close did not work!\n");
+        }
         int statval;
-        
         if(!wait(&statval)) {
             printf("Wait failed!\n");
             return 1;
@@ -101,9 +103,6 @@ executeProgramPipeline (
         } else if (statval) {
             printf("Error: %d\n", statval);
             return 1;
-        }
-        if(close(fd[1])) {
-            printf("Close did not work!\n");
         }
         if (!isLastProgram) {
             return executeProgramPipeline(fd[0], nextPrograms); 
