@@ -50,58 +50,50 @@ executeProgramPipeline (
 
     int fd[2];
     if (pipe(fd)) {
-        printf("Could not pipe");
+        fprintf(stderr, "Could not pipe");
         return 1;
     }
 
     int childpid = fork();
     if (childpid == -1) {
-        printf("Could not fork!\n");
+        fprintf(stderr, "Could not fork!\n");
         return 1;
     }
     if (!childpid) {
         if (close(fd[0])) {
-            printf("Close did not work!\n");
+            /* Non fatal error */
+            fprintf(stderr, "Close did not work!\n");
         }
         if (dup2(fdin, STDIN_FILENO) < 0) {
-            printf("dup2 fail!\n");
+            fprintf(stderr, "dup2 fail!\n");
             return 1;
         }
-        /* Redirect stderr so that error output from intermediary programs are hidden */
-        if (dup2(fdin, STDERR_FILENO) < 0) {
-            printf("dup2 fail!\n");
-            return 1;
+        if (close(fdin)) {
+            fprintf(stderr, "Could not close input pipe");
         }
-        /* The last programs output must go to STDOUT */
         if (!isLastProgram) {
             if (dup2(fd[1], STDOUT_FILENO) < 0) {
-                printf("dup2 fail!\n");
+                fprintf(stderr, "dup2 fail!\n");
                 return 1;
             }
+        }
+        if (close(fd[1])) {
+            fprintf(stderr, "Error in closing pipe");
         }
         execvp(programName, program);
     } else {
         if(close(fd[1])) {
-            printf("Close did not work!\n");
+            fprintf(stderr, "Close did not work!\n");
         }
         int statval;
         if(!wait(&statval)) {
-            printf("Wait failed!\n");
+            fprintf(stderr, "Wait failed!\n");
             return 1;
         }
         
         /* Display more useful error output when grep fails */
-        if (strcmp(programName, "grep") == 0) {
-            if (statval == 512 || statval == 2 || statval == 1) {
-                printf("Syntax error\n");
-                return 1;
-            }
-            if (statval == 256) {
-                printf("Pattern not found\n");
-                return 1;
-            }
-        } else if (statval) {
-            printf("Error: %d\n", statval);
+        if (statval) {
+            close(fd[0]);
             return 1;
         }
         if (!isLastProgram) {
